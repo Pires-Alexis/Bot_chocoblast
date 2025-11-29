@@ -1,7 +1,6 @@
 # This example requires the 'message_content' intent.
 import discord
-from discord.ext import commands     
-from discord import app_commands                                                                                                                                                                                              
+from discord.ext import commands                                                                                                                                                                                   
 from dotenv import load_dotenv
 from pathlib import Path
 import os
@@ -28,14 +27,12 @@ def load_data(filepath: str, mode: str = "r", data: Any = None):
             raise ValueError("Mode invalide ! Utilisez 'r' pour lecture ou 'w' pour écriture.")
     except FileNotFoundError:
         print(f"❌ Fichier introuvable : {filepath}")
+        creer_file()
         return None
-    except json.JSONDecodeError:
-        print(f"❌ Fichier JSON invalide : {filepath}")
-        return None
-    except Exception as e:
-        print(f"❌ Erreur : {e}")
-        return None
-
+def save_data(data):
+    """Écrit les données dans le JSON"""
+    with open("data.json", "w") as f:
+        json.dump(data, f, indent=4)
 
 def creer_file() :
      '''
@@ -52,14 +49,13 @@ def add_chocoblast(pseudo,id) :
         data = load_data("data.json","r")
         for ele in data :
             if ele['id_pseudo'] == id :
-                ele['nbr_chocoblast'] += 1
+                ele['chocoblast'] += 1
                 is_added = True
-                with open("./data.json", "w", encoding="utf-8") as fp:
-                    json.dump(data,fp)
                 break
+        save_data(data)
         if not(is_added) :
             add_user(pseudo,id)
-            add_chocoblast(pseudo,id)
+            return add_chocoblast(pseudo,id)
     except FileNotFoundError:
         print("can't add : file does not exist")
         creer_file()
@@ -70,8 +66,7 @@ def add_user(pseudo,id) :
     try :
         data = load_data("./data.json","r")
         data.append({"pseudo" : str(pseudo),"nbr_chocoblast" : 0, "id_pseudo" : id})
-        with open("./data.json", "w", encoding="utf-8") as fp:
-         json.dump(data,fp)
+        save_data(data)
     except FileNotFoundError:
         print("file not found")
         creer_file()
@@ -80,19 +75,10 @@ def add_user(pseudo,id) :
 intents = discord.Intents.default()
 intents.message_content = True
 bot = commands.Bot(command_prefix="!",intents=intents)
-client = discord.Client(intents=intents)
 
-class MyClient(discord.Client):
-    async def on_ready(self):
-        print(f'Logged on as {self.user}!')
-    async def on_message(self, message):
-        print(f'Message from {message.author}: {message.content}')
-    async def setup_hook(self):
-        await self.tree.sync()
-
-@client.event
+@bot.event
 async def on_message(message):
-    if message.author == client.user:
+    if message.author == bot.user:
         return
 
     if "chocoblast" in message.content.lower().strip():
@@ -101,25 +87,28 @@ async def on_message(message):
         for dat in data :
             if dat["id_pseudo"] == message.author.id:
                 add_chocoblast(message.author.name,message.author.id)
-            else :
-                creer_file()
-                add_chocoblast(message.author.name,message.author.id)
 
+@bot.event
+async def on_ready():
+    print(f'Connecté en tant que {bot.user}')
+    await bot.tree.sync()
+    print("Commande slash activé")
 
 @bot.tree.command(name="chocostat",description="Affiche les chocoblasts")
 async def test(interaction: discord.Interaction):
     try:
         ligne = load_data("./data.json","r")
-        id_pseudo,nbr =ligne
         descriptions = ""
-        for i in ligne :
-            descriptions += f'- <@{id_pseudo[i]}> : {nbr} chocoblast{"s" if nbr > 1 else ""} \n'
+        for i in range(len(ligne)) :
+            id_pseudo = ligne[i]["id_pseudo"]
+            nbr = ligne[i]["chocoblast"]
+            descriptions += f'- <@{id_pseudo}> : {nbr} chocoblast{"s" if nbr > 1 else ""} \n'
         embed  = discord.Embed(title = "Lists des joueurs aux Chocoblast",description=descriptions)
         await interaction.response.send_message(embed=embed)
     except FileNotFoundError :
         print("file not found")
         creer_file()
-        interaction.response.send_message("Il n'y a personne sur la bdd")
+        await interaction.response.send_message("Il n'y a personne sur la bdd")
 
 # @bot.tree.command(name="ChocoClassemement",description="Affiche le classement des chocoblastés")
 # async def classe(interaction: discord.Integration):
@@ -155,9 +144,5 @@ async def test(interaction: discord.Interaction):
 #             medal = "🥉 "
 #             embed.color = discord.Color.light_grey()
 #     interaction.response.send_message(embed=embed)
-
-# @client.event
-# async def on_ready():
-#     print(f'We have logged in as {client.user}')
-#     await bot.tree.sync() 
-client.run(os.getenv("DISCORD_TOKEN"))
+ 
+bot.run(os.getenv("DISCORD_TOKEN"))
