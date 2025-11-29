@@ -7,6 +7,7 @@ import os
 import json
 import re
 load_dotenv(Path("./.env"))
+guild = discord.Object(id=int(os.getenv("GUILD_ID")))
 def load_data(filepath: str, mode: str = "r", data: Any = None):
     """
     Fonction polyvalente pour lire ou écrire un fichier JSON.
@@ -101,7 +102,7 @@ async def on_message(message):
 @bot.event
 async def on_ready():
     print(f'Connecté en tant que {bot.user}')
-    await bot.tree.sync()
+    await bot.tree.sync(guild=guild)
     print("Commande slash activé")
 
 @bot.tree.command(name="chocostat",description="Affiche les chocoblasts")
@@ -120,39 +121,38 @@ async def test(interaction: discord.Interaction):
         creer_file()
         await interaction.response.send_message("Il n'y a personne sur la bdd")
 
-# @bot.tree.command(name="ChocoClassemement",description="Affiche le classement des chocoblastés")
-# async def classe(interaction: discord.Integration):
-#     await cursor.execute("""
-#                          SELECT id_pseudo,chocoblast from users
-#                          """)
-#     scores = cursor.fetchone()
-#     classement = sorted(
-#     ((name, score) for name, score in scores if score > 0),
-#     key=lambda x: x[1],
-#     reverse=True
-# )
+@bot.tree.command(name="chococlassement", description="Affiche le classement des chocoblastés")
+async def classe(interaction: discord.Interaction):
+    scores = load_data("./data.json")
+    
+    # Filtre et tri
+    classement = sorted(
+        ((entry["id_pseudo"], entry["chocoblast"]) for entry in scores if entry["chocoblast"] > 0),
+        key=lambda x: x[1],
+        reverse=True
+    )
 
+    # Création de l'embed
+    embed = discord.Embed(
+        title="🏆 Classement des Scores",
+        description="Voici les utilisateurs avec un score > 0",
+        color=discord.Color.blue()
+    )
 
-#     # Couleurs dynamiques selon rang
-#     color_map = [discord.Color.gold(), discord.Color.dark_gray(), discord.Color.light_grey()]
-#     embed = discord.Embed(
-#         title="🏆 Classement des Scores",
-#         description="Voici les utilisateurs avec un score > 0",
-#         color=discord.Color.blue()  # couleur par défaut
-#     )
+    # Remplissage de l'embed
+    for i, (name, score) in enumerate(classement, start=1):
+        if i == 1:
+            medal = "🥇"
+        elif i == 2:
+            medal = "🥈"
+        elif i == 3:
+            medal = "🥉"
+        else:
+            medal = f"{i}️⃣"
 
-#     for i, (name, score) in enumerate(classement, start=1):
-#         # Médaille top 3
-#         medal = ""
-#         if i == 1: 
-#             medal = "🥇 "
-#             embed.color = discord.Color.gold()
-#         elif i == 2: 
-#             medal = "🥈 "
-#             embed.color = discord.Color.dark_gray()
-#         elif i == 3: 
-#             medal = "🥉 "
-#             embed.color = discord.Color.light_grey()
-#     interaction.response.send_message(embed=embed)
- 
+        embed.add_field(name=f"{medal} <@{name}>", value=f"{score} chocoblast{"s" if score > 1 else ""}", inline=False)
+
+    # Envoi de l'embed
+    await interaction.response.send_message(embed=embed)
+
 bot.run(os.getenv("DISCORD_TOKEN"))
