@@ -8,7 +8,7 @@ import json
 import re
 load_dotenv(Path("./.env"))
 guild = discord.Object(id=int(os.getenv("GUILD_ID")))
-def load_data(filepath: str, mode: str = "r", data: Any = None):
+def load_data(filepath: str, mode: str = "r"):
     """
     Fonction polyvalente pour lire ou écrire un fichier JSON.
     
@@ -114,7 +114,7 @@ async def test(interaction: discord.Interaction):
             id_pseudo = ligne[i]["id_pseudo"]
             nbr = ligne[i]["chocoblast"]
             descriptions += f'- <@{id_pseudo}> : {nbr} chocoblast{"s" if nbr > 1 else ""} \n'
-        embed  = discord.Embed(title = "Lists des joueurs aux Chocoblast",description=descriptions)
+        embed  = discord.Embed(title = "Lists des joueurs au Chocoblast",description=descriptions,color=discord.Color.gold())
         await interaction.response.send_message(embed=embed)
     except FileNotFoundError :
         print("file not found")
@@ -136,7 +136,7 @@ async def classe(interaction: discord.Interaction):
     embed = discord.Embed(
         title="🏆 Classement des Scores",
         description="Voici les utilisateurs avec un score > 0",
-        color=discord.Color.blue()
+        color=discord.Color.gold()
     )
 
     # Remplissage de l'embed
@@ -150,9 +150,8 @@ async def classe(interaction: discord.Interaction):
         else:
             medal = f"{i}️⃣"
 
-        embed.add_field(name=f"{medal} <@{name}>", value=f"{score} chocoblast{"s" if score > 1 else ""}", inline=False)
+        embed.add_field(name=f"{medal} - <@{name}>", value=f"{score} chocoblast{"s" if score > 1 else ""}", inline=False)
 
-    # Envoi de l'embed
     await interaction.response.send_message(embed=embed)
 
 bot.run(os.getenv("DISCORD_TOKEN"))
