@@ -8,25 +8,19 @@ import json
 import re
 load_dotenv(Path("./.env"))
 guilds = discord.Object(id=int(os.getenv("GUILD_ID")))
-def load_data(filepath: str, mode: str = "r"):
+def load_data(filepath: str):
     """
     Fonction polyvalente pour lire ou écrire un fichier JSON.
     
     Arguments :
     - filepath : chemin du fichier JSON
-    - mode : "r" pour lecture, "w" pour écriture
-    - data : objet Python à écrire si mode="w"
     
     Retour :
-    - Si mode="r", retourne les données chargées du JSON
+    -retourne les données chargées du JSON
     """
     try:
-        if mode == "r":
-            with open(filepath, "r", encoding="utf-8") as f:
-                return json.load(f)
-        
-        else:
-            raise ValueError("Mode invalide ! Utilisez 'r' pour lecture ou 'w' pour écriture.")
+        with open(filepath, "r", encoding="utf-8") as f:
+            return json.load(f)
     except FileNotFoundError:
         print(f"❌ Fichier introuvable : {filepath}")
         creer_file()
@@ -104,40 +98,46 @@ intents.message_content = True
 bot = commands.Bot(command_prefix="!",intents=intents)
 
 @bot.event
+async def on_ready():
+    print(f'Connecté en tant que {bot.user}')
+    await bot.tree.sync(guild=guilds)
+    print("Commande slash activé")
+    guild = bot.get_guild(int(os.getenv("GUILD_ID")))
+    ids = {member.id for member in guild.members}
+    data = load_data("./data.json")
+    # on récupère les ids déjà dans la db
+    db_ids = {entry["id_pseudo"] for entry in data}
+    # ids manquants = ids du serveur - ids déjà enregistrés
+    missing = ids - db_ids
+    for user_id in missing:
+        if user_id == 1441027736343941142 :
+            continue
+        add_user(user_id)
+
+    print(f"{len(missing)} utilisateurs ajoutés .\nUser mis à jour")
+@bot.event
 async def on_message(message):
     if message.author == bot.user:
         return
 
     if "chocoblast" in normalize_message(message.content) and len(normalize_message(message.content)) == 10 :
         await message.channel.send(f'{message.author.display_name} s\'est fait chocoblast')
-        data = load_data("./data.json","r")
+        data = load_data("./data.json")
+        guild = bot.get_guild(int(os.getenv("GUILD_ID")))
         ids = [member.id for member in guild.members]
-        for dat in data :
-            if message.author.id in ids:
-                add_chocoblast(message.author.name,message.author.id)
-            else:
-                add_user(message.author.id)
-                add_chocoblast(message.author.id)
+        if message.author.id in ids:
+            add_chocoblast(message.author.name,message.author.id)
+        else:
+            add_user(message.author.id)
+            add_chocoblast(message.author.id)
 
-@bot.event
-async def on_ready():
-    print(f'Connecté en tant que {bot.user}')
-    await bot.tree.sync(guild=guilds)
-    print("Commande slash activé")
-    guild = bot.get_guild(int(os.getenv("GUILD_ID")))
-    ids = [member.id for member in guild.members]
-    data = load_data("./data.json")
-    while len(ids) != len(data):
-        for id in ids :
-            if id not in data :
-                add_user(id)
 
 
 
 @bot.tree.command(name="chocostat",description="Affiche les chocoblasts")
 async def test(interaction: discord.Interaction):
     try:
-        ligne = load_data("./data.json","r")
+        ligne = load_data("./data.json")
         descriptions = ""
         for i in range(len(ligne)) :
             id_pseudo = ligne[i]["id_pseudo"]
@@ -163,8 +163,8 @@ async def classe(interaction: discord.Interaction):
 
     # Création de l'embed
     embed = discord.Embed(
-        title="🏆 Classement des Scores",
-        description="Voici les utilisateurs avec un score > 0",
+        title="🏆 Classement des chocoblastés",
+        description="Voici les utilisateurs chocoblastés",
         color=discord.Color.gold()
     )
 
@@ -179,8 +179,23 @@ async def classe(interaction: discord.Interaction):
         else:
             medal = f"{i}️⃣"
 
-        embed.add_field(name=f"{medal} - <@{name}>", value=f"{score} chocoblast{"s" if score > 1 else ""}", inline=False)
+        embed.add_field(name=f'{medal} - <@{name}>', value=f'{score} chocoblast{"s" if score > 1 else ""}', inline=False)
 
     await interaction.response.send_message(embed=embed)
+@bot.tree.command(name="chocochange",description="[Admin]change le nombre chocoblast d'une personne")
+async def change_values(interaction : discord.Interaction,name:discord.Member,ajout : int):
+    data = load_data("./data.json")
+    if interaction.user.guild_permissions.administrator or interaction.user.id == 597518397290315807 :
+        for i in range(len(data)):
+            if data[i]["id_pseudo"] == name.id :
+                data[i]["chocoblast"] += ajout
+        save_data(data=data)
+        await interaction.response.send_message(f"Le compteur de <@{name.id}> a été changé.")
+    else:
+        await interaction.response.send_message (f'Vous n\'avez pas les droits d\'admin pour changer le nombre de chocoblast de cette personne')
+    
+
+    
+
 
 bot.run(os.getenv("DISCORD_TOKEN"))
