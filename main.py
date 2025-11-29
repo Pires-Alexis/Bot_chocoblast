@@ -7,7 +7,7 @@ import os
 import json
 import re
 load_dotenv(Path("./.env"))
-guild = discord.Object(id=int(os.getenv("GUILD_ID")))
+guilds = discord.Object(id=int(os.getenv("GUILD_ID")))
 def load_data(filepath: str, mode: str = "r"):
     """
     Fonction polyvalente pour lire ou écrire un fichier JSON.
@@ -42,7 +42,23 @@ def creer_file() :
      '''
      with open("data.json", "w") as f:
         return json.dump([], f)
-def add_chocoblast(pseudo,id) :
+def change_chocoblast(id,index):
+    """Change le compteur d'un utilisateur"""
+    data = load_data()
+    is_change = False
+
+    for ele in data:
+        if ele['id'] == id:
+            ele['nbr_chocoblast'] += index
+            is_change = True
+            break
+
+    if not is_change:
+        add_user(id)
+        return add_chocoblast(id,index)
+
+    save_data(data)
+def add_chocoblast(id) :
     '''
     incrémente de 1 le compteur de chocoblast de quelqu'un
     '''
@@ -56,23 +72,23 @@ def add_chocoblast(pseudo,id) :
                 break
         save_data(data)
         if not(is_added) :
-            add_user(pseudo,id)
-            return add_chocoblast(pseudo,id)
+            add_user(id)
+            return add_chocoblast(id)
     except FileNotFoundError:
         print("can't add : file does not exist")
         creer_file()
-def add_user(pseudo,id) :
+def add_user(id) :
     '''
     rajoute une personne au fichier data.json
     '''
     try :
-        data = load_data("./data.json","r")
-        data.append({"pseudo" : str(pseudo),"nbr_chocoblast" : 0, "id_pseudo" : id})
+        data = load_data("./data.json","r")   
+        data.append({"chocoblast" : 0, "id_pseudo" : id})
         save_data(data)
     except FileNotFoundError:
         print("file not found")
         creer_file()
-        add_user(pseudo,id)
+        add_user(id)
 def normalize_message(msg:str) -> str:
     """
     Rends les messages plus lisible, et utilisable
@@ -82,7 +98,7 @@ def normalize_message(msg:str) -> str:
     msg = msg.replace("0", "o").replace("1", "l").replace("4", "a")
     msg = msg.replace("eau", "o").replace("au", "o")
     return msg
-    
+
 intents = discord.Intents.default()
 intents.message_content = True
 bot = commands.Bot(command_prefix="!",intents=intents)
@@ -95,15 +111,28 @@ async def on_message(message):
     if "chocoblast" in normalize_message(message.content) and len(normalize_message(message.content)) == 10 :
         await message.channel.send(f'{message.author.display_name} s\'est fait chocoblast')
         data = load_data("./data.json","r")
+        ids = [member.id for member in guild.members]
         for dat in data :
-            if dat["id_pseudo"] == message.author.id:
+            if message.author.id in ids:
                 add_chocoblast(message.author.name,message.author.id)
+            else:
+                add_user(message.author.id)
+                add_chocoblast(message.author.id)
 
 @bot.event
 async def on_ready():
     print(f'Connecté en tant que {bot.user}')
-    await bot.tree.sync(guild=guild)
+    await bot.tree.sync(guild=guilds)
     print("Commande slash activé")
+    guild = bot.get_guild(int(os.getenv("GUILD_ID")))
+    ids = [member.id for member in guild.members]
+    data = load_data("./data.json")
+    while len(ids) != len(data):
+        for id in ids :
+            if id not in data :
+                add_user(id)
+
+
 
 @bot.tree.command(name="chocostat",description="Affiche les chocoblasts")
 async def test(interaction: discord.Interaction):
