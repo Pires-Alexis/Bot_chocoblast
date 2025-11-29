@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 from pathlib import Path
 import os
 import json
+import re
 load_dotenv(Path("./.env"))
 def load_data(filepath: str, mode: str = "r", data: Any = None):
     """
@@ -71,6 +72,15 @@ def add_user(pseudo,id) :
         print("file not found")
         creer_file()
         add_user(pseudo,id)
+def normalize_message(msg:str) -> str:
+    """
+    Rends les messages plus lisible, et utilisable
+    """
+    msg = msg.lower().strip()
+    msg = re.sub(r"[^a-z0-9]", "", msg)
+    msg = msg.replace("0", "o").replace("1", "l").replace("4", "a")
+    msg = msg.replace("eau", "o").replace("au", "o")
+    return msg
     
 intents = discord.Intents.default()
 intents.message_content = True
@@ -81,7 +91,7 @@ async def on_message(message):
     if message.author == bot.user:
         return
 
-    if "chocoblast" in message.content.lower().strip():
+    if "chocoblast" in normalize_message(message.content) and len(normalize_message(message.content)) == 10 :
         await message.channel.send(f'{message.author.display_name} s\'est fait chocoblast')
         data = load_data("./data.json","r")
         for dat in data :
