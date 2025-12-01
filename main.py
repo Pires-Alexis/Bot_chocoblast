@@ -185,7 +185,7 @@ async def classe(interaction: discord.Interaction):
         embed.add_field(name=f'{medal} - {"quelqu'un d'autre" if name == None else name} ', value=f'{score} chocoblast{"s" if score > 1 else ""}', inline=False)
 
     await interaction.response.send_message(embed=embed)
-@bot.tree.command(name="chocochange",description="[Admin]change le nombre chocoblast d'une personne")
+@bot.tree.command(name="chocochange",description="[Admin]ajout et enleve le nombre chocoblast d'une personne")
 async def change_values(interaction : discord.Interaction,name:discord.Member,ajout : int):
     data = load_data("./data.json")
     if interaction.user.guild_permissions.administrator or interaction.user.id == 597518397290315807 :
@@ -196,6 +196,22 @@ async def change_values(interaction : discord.Interaction,name:discord.Member,aj
         await interaction.response.send_message(f"Le compteur de <@{name.id}> a été changé.")
     else:
         await interaction.response.send_message (f'Vous n\'avez pas les droits d\'admin pour changer le nombre de chocoblast de cette personne')
+    
+@bot.tree.command(name="chocoset",description="[Admin]change le nombre chocoblast d'une personne")
+async def change_values(interaction : discord.Interaction,name:discord.Member,nombre : int):
+    data = load_data("./data.json")
+    if interaction.user.guild_permissions.administrator or interaction.user.id == 597518397290315807 :
+        for i in range(len(data)):
+            if data[i]["id_pseudo"] == name.id :
+                data[i]["chocoblast"] = nombre
+            else:
+                await interaction.response.send_message(f"Il n'y a pas d'utilisateur qui a ce nom/id")
+        save_data(data=data)
+        await interaction.response.send_message(f"Le compteur de <@{name.id}> a été changé.")
+    else:
+        await interaction.response.send_message (f'Vous n\'avez pas les droits d\'admin pour changer le nombre de chocoblast de cette personne')
+    
+
     
 
     
