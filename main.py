@@ -58,7 +58,7 @@ def add_chocoblast(id) :
     '''
     is_added = False
     try :
-        data = load_data("data.json","r")
+        data = load_data("data.json")
         for ele in data :
             if ele['id_pseudo'] == id :
                 ele['chocoblast'] += 1
@@ -76,7 +76,7 @@ def add_user(id) :
     rajoute une personne au fichier data.json
     '''
     try :
-        data = load_data("./data.json","r")   
+        data = load_data("./data.json")   
         data.append({"chocoblast" : 0, "id_pseudo" : id})
         save_data(data)
     except FileNotFoundError:
@@ -95,6 +95,7 @@ def normalize_message(msg:str) -> str:
 
 intents = discord.Intents.default()
 intents.message_content = True
+intents.members = True
 bot = commands.Bot(command_prefix="!",intents=intents)
 
 @bot.event
@@ -113,6 +114,9 @@ async def on_ready():
         if user_id == 1441027736343941142 :
             continue
         add_user(user_id)
+    for cmd in bot.tree.get_commands():
+        print(cmd.name)
+
 
     print(f"{len(missing)} utilisateurs ajoutés .\nUser mis à jour")
 @bot.event
@@ -122,11 +126,10 @@ async def on_message(message):
 
     if "chocoblast" in normalize_message(message.content) and len(normalize_message(message.content)) == 10 :
         await message.channel.send(f'{message.author.display_name} s\'est fait chocoblast')
-        data = load_data("./data.json")
         guild = bot.get_guild(int(os.getenv("GUILD_ID")))
         ids = [member.id for member in guild.members]
         if message.author.id in ids:
-            add_chocoblast(message.author.name,message.author.id)
+            add_chocoblast(message.author.id)
         else:
             add_user(message.author.id)
             add_chocoblast(message.author.id)
@@ -178,8 +181,8 @@ async def classe(interaction: discord.Interaction):
             medal = "🥉"
         else:
             medal = f"{i}️⃣"
-
-        embed.add_field(name=f'{medal} - <@{name}>', value=f'{score} chocoblast{"s" if score > 1 else ""}', inline=False)
+        name = interaction.guild.get_member(name)
+        embed.add_field(name=f'{medal} - {"quelqu'un d'autre" if name == None else name} ', value=f'{score} chocoblast{"s" if score > 1 else ""}', inline=False)
 
     await interaction.response.send_message(embed=embed)
 @bot.tree.command(name="chocochange",description="[Admin]change le nombre chocoblast d'une personne")
@@ -199,3 +202,5 @@ async def change_values(interaction : discord.Interaction,name:discord.Member,aj
 
 
 bot.run(os.getenv("DISCORD_TOKEN"))
+
+

@@ -20,7 +20,7 @@
         "id_pseudo": 509006003287621652
     },
     {
-        "chocoblast": 0,
+        "chocoblast": 1,
         "id_pseudo": 597518397290315807
     },
     {
@@ -78,5 +78,9 @@
     {
         "chocoblast": 0,
         "id_pseudo": 907762540413603950
+    },
+    {
+        "chocoblast": 0,
+        "id_pseudo": 1444283912519024754
     }
 ]
