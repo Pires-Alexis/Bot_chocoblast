@@ -1,86 +1,128 @@
 [
     {
         "chocoblast": 0,
-        "id_pseudo": 680023361107394560
+        "id_pseudo": 680023361107394560,
+        "datetime": null,
+        "taxes": 0
     },
     {
         "chocoblast": 0,
-        "id_pseudo": 720204368485417013
+        "id_pseudo": 720204368485417013,
+        "datetime": null,
+        "taxes": 0
     },
     {
         "chocoblast": 3,
-        "id_pseudo": 280401979035877377
+        "id_pseudo": 280401979035877377,
+        "datetime": null,
+        "taxes": 0
     },
     {
         "chocoblast": 0,
-        "id_pseudo": 855117975543611392
+        "id_pseudo": 855117975543611392,
+        "datetime": null,
+        "taxes": 0
+    },
+    {
+        "chocoblast": 11,
+        "id_pseudo": 509006003287621652,
+        "datetime": "2025-12-03T14:52:55.284000+00:00",
+        "taxes": 0
     },
     {
         "chocoblast": 1,
-        "id_pseudo": 509006003287621652
-    },
-    {
-        "chocoblast": 1,
-        "id_pseudo": 597518397290315807
-    },
-    {
-        "chocoblast": 0,
-        "id_pseudo": 796351070522966088
+        "id_pseudo": 597518397290315807,
+        "datetime": "2025-12-03T14:52:10.280000+00:00",
+        "taxes": 0
     },
     {
         "chocoblast": 0,
-        "id_pseudo": 505461872330276885
+        "id_pseudo": 796351070522966088,
+        "datetime": null,
+        "taxes": 0
+    },
+    {
+        "chocoblast": 0,
+        "id_pseudo": 505461872330276885,
+        "datetime": null,
+        "taxes": 0
     },
     {
         "chocoblast": 2,
-        "id_pseudo": 885825895342940161
+        "id_pseudo": 885825895342940161,
+        "datetime": "2025-11-04T10:26:00",
+        "taxes": 0
     },
     {
         "chocoblast": 0,
-        "id_pseudo": 463023478535356448
+        "id_pseudo": 463023478535356448,
+        "datetime": null,
+        "taxes": 0
     },
     {
         "chocoblast": 1,
-        "id_pseudo": 937386825562062858
+        "id_pseudo": 937386825562062858,
+        "datetime": null,
+        "taxes": 0
     },
     {
         "chocoblast": 3,
-        "id_pseudo": 982337929517076500
+        "id_pseudo": 982337929517076500,
+        "datetime": "2025-09-25T15:03:00",
+        "taxes": 0
     },
     {
         "chocoblast": 0,
-        "id_pseudo": 490878265456590868
+        "id_pseudo": 490878265456590868,
+        "datetime": null,
+        "taxes": 0
     },
     {
         "chocoblast": 0,
-        "id_pseudo": 968780137531318302
+        "id_pseudo": 968780137531318302,
+        "datetime": null,
+        "taxes": 0
     },
     {
         "chocoblast": 0,
-        "id_pseudo": 958704559788802078
+        "id_pseudo": 958704559788802078,
+        "datetime": null,
+        "taxes": 0
     },
     {
         "chocoblast": 0,
-        "id_pseudo": 1134134751964442717
+        "id_pseudo": 1134134751964442717,
+        "datetime": null,
+        "taxes": 0
     },
     {
         "chocoblast": 7,
-        "id_pseudo": 997551960523804734
+        "id_pseudo": 997551960523804734,
+        "datetime": "2025-10-07T15:00:00",
+        "taxes": 0
     },
     {
         "chocoblast": 3,
-        "id_pseudo": 626403450678411274
+        "id_pseudo": 626403450678411274,
+        "datetime": "2025-11-27T16:00:00",
+        "taxes": 0
     },
     {
         "chocoblast": 2,
-        "id_pseudo": 1414510322911281227
+        "id_pseudo": 1414510322911281227,
+        "datetime": "2025-11-20T11:50:00",
+        "taxes": 0
     },
     {
         "chocoblast": 0,
-        "id_pseudo": 907762540413603950
+        "id_pseudo": 907762540413603950,
+        "datetime": null,
+        "taxes": 0
     },
     {
         "chocoblast": 0,
-        "id_pseudo": 1444283912519024754
+        "id_pseudo": 1444283912519024754,
+        "datetime": null,
+        "taxes": 0
     }
 ]
