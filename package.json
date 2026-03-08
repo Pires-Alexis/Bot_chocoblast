@@ -1,0 +1,24 @@
+{
+  "name": "bot_chocoblast",
+  "version": "1.0.0",
+  "description": "Package bot discord avec python et json",
+  "keywords": [
+    "python",
+    "json"
+  ],
+  "homepage": "https://github.com/Pires-Alexis/Bot_chocoblast#readme",
+  "bugs": {
+    "url": "https://github.com/Pires-Alexis/Bot_chocoblast/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Pires-Alexis/Bot_chocoblast.git"
+  },
+  "license": "ISC",
+  "author": "Pires-Alexis",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  }
+}

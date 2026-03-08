@@ -83,7 +83,7 @@ def add_user(id) :
     '''
     try :
         data = load_data("./data.json")   
-        data.append({"chocoblast" : 0, "id_pseudo" : id,"datetime":None})
+        data.append({"chocoblast" : 0, "id_pseudo" : id,"datetime":None,"taxes":0})
         save_data(data)
     except FileNotFoundError:
         print("file not found")
@@ -94,9 +94,9 @@ def normalize_message(msg:str) -> str:
     Rends les messages plus lisible, et utilisable
     """
     msg = msg.lower().strip()
-    msg = re.sub(r"[^a-z0-9]", "", msg)
-    msg = msg.replace("0", "o").replace("1", "l").replace("4", "a")
-    msg = msg.replace("eau", "o").replace("au", "o")
+    msg = re.sub(r"[^a-z0-9]", " ", msg)
+    msg = msg.replace("0", "o").replace("1", "l").replace("4", "a").replace("'"," ")
+    msg = msg.replace("eau", "o").replace("au", "o").replace("ç","c").replace("ô","o").replace("é","e")
     return msg
 
 intents = discord.Intents.default()
@@ -130,11 +130,86 @@ async def on_ready():
 
 
     print(f"{len(missing)-1} utilisateurs ajoutés .\nUser mis à jour")
+
+    # Dictionnaire pour stocker l'état de chaque utilisateur
+user_state = {}
+
+# Définition des étapes de la conversation
+STEPS = {
+    "start": 0,
+    "hello": 1,
+    "bad_mood": 2,
+    "alone": 3,
+    "negative_reply": 4,
+    "cv_pas": 5,
+    "working":6
+}
 @bot.event
 async def on_message(message):
-    if message.author == bot.user:
+    if message.author == bot.user: #pour pas qu'il se répond à lui même
         return
+    user_id = int(message.author.id)
+    content = normalize_message(message.content)
 
+    # Initialiser l'état si l'utilisateur n'existe pas
+    if user_id not in user_state:
+        user_state[user_id] = STEPS["start"]
+        
+
+    # --- Gestion des messages ---
+    elif ("slt" in content or "salut" in content or "hello" in content or "salam" in content) and user_state[user_id] == 0:
+        await message.add_reaction("👋")
+        user_state[user_id] = STEPS["hello"]
+        await message.channel.send(f"Salut <@{user_id}> ! 👋\nÇa va ?")
+    elif ("cv pas" in content) and int(user_state[user_id]) == 1:
+        user_state[user_id] = STEPS["cv_pas"]
+        await message.channel.send("Qu'est ce qui ne va pas ?")
+
+    elif "tu marches pas" in content and user_state[user_id] == 5 :
+        await message.channel.send(f"<@597518397290315807>, <@{user_id}> m'a dit que je me suis blessé")
+    elif ("j aime pas vivre" in content or"j aime pas la vie" in content) and user_state[user_id] == 5:
+        user_state[user_id] = STEPS["bad_mood"]
+        await message.channel.send(
+            "Je suis vraiment désolé que tu te sentes comme ça."
+            "Même si je ne suis qu’un bot, tu n’es pas seul. "
+            "Parler à quelqu’un en qui tu as confiance peut vraiment aider. "
+            )
+
+    elif ("je n ai personne" in content or "j ai personne a mes cote" in content) and user_state[user_id] == 2 :
+        user_state[user_id] = STEPS["alone"]
+        await message.channel.send(
+            "Je suis désolé que tu te sentes seul… "
+            "Même si je ne peux pas remplacer une vraie présence, je suis là pour te parler autant que tu veux. 💛"
+        )
+
+    elif content == "non" and user_state[user_id] == 3:
+        user_state[user_id] = STEPS["negative_reply"]
+        await message.channel.send(
+            "D’accord… merci de m’avoir répondu. "
+            "Tu mérites d’être entouré et soutenu, même si tu n’as pas l’impression que quelqu’un est là. 💛"
+        )
+    elif content == "tu marches" and user_state[user_id] == 1:
+        await message.channel.send("oui,pk?")
+        user_state[user_id] = STEPS["working"]
+    elif content == "askip tu marches pas" and user_state[user_id] == 6 :
+        await message.channel.send("Celui qui a dit ça est juste con trql")
+        user_state[user_id] = STEPS ["start"]
+    elif content == "oui" and user_state[user_id] == 1 :
+        await message.channel.send("noice !!")
+        user_state[user_id] = STEPS["start"]
+    elif content == "non" and user_state[user_id] == 1 :
+        await message.channel.send ("En vrai,j'espère que ça ira mieux..")
+        user_state[user_id] = STEPS["start"]
+    elif content == "tg" and user_state[user_id] == 1:
+        await message.channel.send("français")
+        user_state[user_id] = STEPS["start"]
+
+    # --- Si aucun cas ne correspond, on réinitialise l'état à start ---
+    else :
+        if user_state[user_id] != STEPS["start"]:
+            print("Reset automatique : message hors sujet")
+            user_state[user_id] = STEPS["start"]
+    await bot.process_commands(message)
     if "chocoblast" in normalize_message(message.content) and len(normalize_message(message.content)) == 10 :
         await message.channel.send(f'{message.author.display_name} s\'est fait chocoblast')
         guild = bot.get_guild(int(os.getenv("GUILD_ID")))
@@ -163,7 +238,7 @@ async def test(interaction: discord.Interaction):
              dattime = datetime.fromisoformat(dt_value)
             else:
              dattime = None  # ou gérer comme tu veux
-            descriptions += f'- <@{id_pseudo}> : {nbr} chocoblast{"s" if nbr > 1 else ""}  {None if dattime == None else f'\ndernier chocoblast :{dattime}\nChocoblast restant à payer : {dif} {taxe}'} \n'
+            descriptions += f'- <@{id_pseudo}> : {nbr} chocoblast{"s" if nbr > 1 else ""}  {"" if dattime == None else f'\ndernier chocoblast :{dattime}\nChocoblast restant à payer : {dif}'} \n \n'
         embed  = discord.Embed(title = "Lists des joueurs au Chocoblast",description=descriptions,color=0xffa200)
         await interaction.response.send_message(embed=embed)
     except FileNotFoundError :
